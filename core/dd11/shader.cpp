@@ -97,4 +97,9 @@ namespace dd11 {
 	{
 		glUniform4f(glGetUniformLocation(m_id, name.c_str()), x, y, z, w);
 	}
+
+	void Shader::setVec3Array(const std::string& name, int arrLength, float arr[][3]) const
+	{
+		glUniform3fv(glGetUniformLocation(m_id, name.c_str()), arrLength, *arr);
+	}
 }

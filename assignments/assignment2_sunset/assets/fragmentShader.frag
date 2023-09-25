@@ -1,45 +1,57 @@
 #version 450
 out vec4 FragColor;
 in vec2 UV;
-//uniform float iTime;
-void main(){
-	vec3 color = mix(vec3(0.1,0.0,0.0),vec3(0.5,0.0,1.0),UV.y);
-    float hills = 0.5 - step(sin(UV.x*12.56) * 0.15 + 0.2,UV.y);
-    color = mix(color,vec3(0.2),hills);
-    FragColor = vec4(color,1.0);
-}
+uniform float iTime;
+uniform vec2 iResolution;
+uniform vec3 SkyColor[2];
+uniform vec3 MountainColor[4];
+uniform vec3 SunColor[1];
+uniform float SunRadius;
+uniform float SunSpeed;
 
-/*float circleSDF(vec2 p, float r){
+float circleSDF(vec2 p, float r){
     return length(p)-r;
 }
 
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
-{
-    vec2 uv = fragCoord/iResolution.xy;
+void main(){
+    vec2 uv = UV;
+
+    // Day/Night Color (Background)
+	vec3 dayColor = mix(SkyColor[0], SkyColor[0], uv.y);
+    vec3 nightColor = mix(SkyColor[1], SkyColor[1], uv.y);
+
+    // Sun Color
+    vec4 sunColor = vec4(SunColor[0], 1.25);
     
-    vec3 dayColor = mix(vec3(0.5,0.0,0.5),vec3(0.5,0.0,0.5),uv.y);
-    vec3 nightColor = mix(vec3(0.0,0.0,0.5),vec3(0.0,0.0,0.5),uv.y);
-    vec4 sunColor = vec4(mix(vec3(0.5,0.0,0.1),vec3(0.5,0.0,1.0),uv.y),1.0);
+    // Background Color
+    vec3 backgroundColor = mix(dayColor, nightColor, uv.y + cos(iTime * SunSpeed));
     
-    vec3 backgroundColor = mix(dayColor, nightColor, uv.y + cos(iTime));
-    
-    vec3 mountainColor = mix(vec3(0.0,0.05,0.15), vec3(0.0, 0.0, 0.0), (uv.y) + cos(iTime));
+    // Mountain Colors (Foreground)
+    vec3 mountainColor1 = mix(MountainColor[0], MountainColor[1], (uv.y) + cos(iTime * SunSpeed));
+    vec3 mountainColor2 = mix(MountainColor[2], MountainColor[3], (uv.y) + cos(iTime * SunSpeed));
     
     vec3 outColor = backgroundColor;
    
     uv = uv * 2.0 - 1.0;
-    uv.x *= iResolution.x / iResolution.y;
+    uv.x *= (iResolution.x / iResolution.y) * 2.25;
 
-    vec2 sunPos = vec2(0.0, -0.65 - cos(iTime));
-    
-    float sun = circleSDF(uv - sunPos, 0.3);
+    // Sun Position + Movement
+    vec2 sunPos = vec2(0.0, -0.65 - cos(iTime * SunSpeed));
+
+    float sun = circleSDF(uv - sunPos, SunRadius);
     sun = 1.0 - smoothstep(-0.05, 0.05, sun);
     
+    // Add Sun to Draw Call
     outColor = mix(outColor, sunColor.rgb, sun*sunColor.a);
+
+    // Mountain Functions
+    float mountains1 = 1.0 - step(0.0 + (sin(uv.x * 5.0) * cos(uv.x/0.4) - (uv.x * uv.x)) / 2.0,uv.y);
+    float mountains2 = 1.0 - step(-0.65 + sin(uv.x * 1.5) * cos(uv.x/0.35) / 3.5,uv.y);
     
-    float mountains = 1.0 - step(sin(uv.x*5.75)*0.5 - 0.25,uv.y);
+    // Add Mountains (Foreground) & Background to Draw Call
+    outColor = mix(outColor, mountainColor1, mountains1 * 1.0);
+    outColor = mix(outColor, mountainColor2, mountains2 * 1.0); 
     
-    outColor = mix(outColor, mountainColor, mountains * 1.0);
-    
-    fragColor = vec4(outColor, 1.0);
-}*/
+    // Draw Call
+    FragColor = vec4(outColor, 1.0);
+}

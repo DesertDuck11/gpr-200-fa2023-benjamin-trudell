@@ -33,8 +33,27 @@ unsigned int indices[6] = {
 unsigned int createVAO(Vertex* vertexData, int numVertices, unsigned int* indicesData, int numIndices);
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
-float triangleColor[3] = { 1.0f, 0.5f, 0.0f };
-float triangleBrightness = 1.0f;
+//float triangleColor[3] = { 1.0f, 0.5f, 0.0f };
+
+float skyColor[2][3] = {
+	// Day Color
+	{ 0.5f, 0.0f, 0.5f },
+	// Night Color
+	{ 0.0f, 0.0f, 0.5f }
+};
+
+float sunColor[3] = { 0.75f, 0.0f, 1.0f};
+float sunRadius = 0.3f;
+float sunSpeed = 1.0f;
+
+float mountainColor[4][3]{
+	// Mountain 1
+	{ 0.0f, 0.05f, 0.15f }, { 0.0f, 0.0f, 0.0f },
+	// Mountain 2
+	{ 0.0f, 0.05f, 0.1f }, { 0.0f, 0.0f, 0.0f }
+};
+
+//float triangleBrightness = 1.0f;
 bool showImGUIDemoWindow = true;
 
 int main() {
@@ -77,14 +96,20 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		//Set uniforms
-		shader.setVec3("_Color", triangleColor[0], triangleColor[1], triangleColor[2]);
-		shader.setFloat("_Brightness", triangleBrightness);
+		//shader.setVec3("_Color", triangleColor[0], triangleColor[1], triangleColor[2]);
+		//shader.setFloat("_Brightness", triangleBrightness);
 		shader.setFloat("iTime", (float)glfwGetTime());
+		shader.setVec2("iResolution", (float)SCREEN_HEIGHT, (float)SCREEN_WIDTH);
+		shader.setVec3Array("SkyColor", 2, skyColor);
+		shader.setVec3Array("MountainColor", 4, mountainColor);
+		shader.setVec3("SunColor", sunColor[0], sunColor[1], sunColor[2]);
+		shader.setFloat("SunRadius", sunRadius);
+		shader.setFloat("SunSpeed", sunSpeed);
 
 		//Wireframe
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		//Shaded
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); 
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
@@ -94,10 +119,17 @@ int main() {
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui::NewFrame();
 
-			ImGui::Begin("Settings");
+			ImGui::Begin("User Interface");
 			ImGui::Checkbox("Show Demo Window", &showImGUIDemoWindow);
-			ImGui::ColorEdit3("Color", triangleColor);
-			ImGui::SliderFloat("Brightness", &triangleBrightness, 0.0f, 1.0f);
+			ImGui::ColorEdit3("Day Color", skyColor[0]);
+			ImGui::ColorEdit3("Night Color", skyColor[1]);
+			ImGui::ColorEdit3("Sun Color", sunColor);
+			ImGui::SliderFloat("Sun Radius", &sunRadius, 0.0f, 2.0f);
+			ImGui::SliderFloat("Sun Speed", &sunSpeed, 0.0f, 10.0f);
+			ImGui::ColorEdit3("Higher Mountain Day Color", mountainColor[0]);
+			ImGui::ColorEdit3("Higher Mountain Night Color", mountainColor[1]);
+			ImGui::ColorEdit3("Lower Mountain Day Color", mountainColor[2]);
+			ImGui::ColorEdit3("Lower Mountain Night Color", mountainColor[3]);
 			ImGui::End();
 			if (showImGUIDemoWindow) {
 				ImGui::ShowDemoWindow(&showImGUIDemoWindow);
