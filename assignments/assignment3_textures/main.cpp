@@ -9,6 +9,7 @@
 #include <imgui_impl_opengl3.h>
 
 #include <ew/shader.h>
+#include <dd11/texture.h>
 
 struct Vertex {
 	float x, y, z;
@@ -61,6 +62,8 @@ int main() {
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 
 	unsigned int quadVAO = createVAO(vertices, 4, indices, 6);
+
+	unsigned int brickTexture = loadTexture("assets/duckprof.png", GL_REPEAT, GL_LINEAR);
 
 	glBindVertexArray(quadVAO);
 
