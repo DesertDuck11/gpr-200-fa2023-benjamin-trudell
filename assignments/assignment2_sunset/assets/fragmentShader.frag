@@ -33,7 +33,7 @@ void main(){
     vec3 outColor = backgroundColor;
    
     uv = uv * 2.0 - 1.0;
-    uv.x *= (iResolution.x / iResolution.y) * 2.25;
+    uv.x *= (iResolution.x / iResolution.y) *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      2.25;
 
     // Sun Position + Movement
     vec2 sunPos = vec2(0.0, -0.65 - cos(iTime * SunSpeed));

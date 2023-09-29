@@ -59,22 +59,42 @@ int main() {
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
 
-	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
+	ew::Shader backgroundShader("assets/background.vert", "assets/background.frag");
+	ew::Shader characterShader("assets/character.vert", "assets/character.frag");
 
 	unsigned int quadVAO = createVAO(vertices, 4, indices, 6);
 
-	unsigned int brickTexture = loadTexture("assets/duckprof.png", GL_REPEAT, GL_LINEAR);
-
-	glBindVertexArray(quadVAO);
+	unsigned int textureA = loadTexture("assets/duckprof.png", GL_REPEAT, GL_LINEAR);
+	unsigned int textureB = loadTexture("assets/noise.png", GL_REPEAT, GL_LINEAR);
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		//Set uniforms
-		shader.use();
+		//Bind Quad
+		glBindVertexArray(quadVAO);
 
+		//Background Shader
+		backgroundShader.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureA);
+
+		//Uniforms
+		backgroundShader.setInt("_BrickTexture", 0);
+		
+		//Draw Quad
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+
+		//Character Shader
+		characterShader.use();
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, textureB);
+
+		//Uniforms
+		characterShader.setInt("_NoiseTexture", 1);
+
+		//Draw Quad
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 		//Render UI
