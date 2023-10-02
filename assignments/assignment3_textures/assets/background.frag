@@ -6,6 +6,8 @@ uniform sampler2D _SkyTexture;
 uniform sampler2D _SunTexture;
 uniform sampler2D _DistortTexture;
 
+uniform float _DistStrength;
+uniform float _Tiling;
 uniform float iTime;
 
 void main(){
@@ -14,10 +16,10 @@ void main(){
     float distort = texture(_DistortTexture,UV).r * normalizedTime;
 
     vec2 uv = UV;
-    uv += distort * 0.25f;
+    uv += distort * _DistStrength;
 
-    vec4 texA = texture(_SkyTexture, (uv * 2.0) * 2.0);
-    vec4 texB = texture(_SunTexture, (uv) * 2.0);
+    vec4 texA = texture(_SkyTexture, (uv * 2.0) * _Tiling);
+    vec4 texB = texture(_SunTexture, (uv) * _Tiling);
 
     vec3 color = mix(texA.rgb, texB.rgb, texB.a);
 

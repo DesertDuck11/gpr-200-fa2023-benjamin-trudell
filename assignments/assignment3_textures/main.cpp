@@ -33,6 +33,8 @@
 		2, 3, 0
 	};
 
+	float distStrength = 0.5f, moveSpeed = 1.0f, tiling = 1.0f;
+
 	int main() {
 		printf("Initializing...");
 		if (!glfwInit()) {
@@ -93,6 +95,8 @@
 			backgroundShader.setInt("_SunTexture", 1);
 			backgroundShader.setInt("_DistortTexture", 2);
 			backgroundShader.setFloat("iTime", (float)glfwGetTime());
+			backgroundShader.setFloat("_DistStrength", distStrength);
+			backgroundShader.setFloat("_Tiling", tiling);
 		
 			//Draw Quad
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
@@ -107,6 +111,7 @@
 			//Uniforms
 			characterShader.setInt("_CharacterShader", 0);
 			characterShader.setFloat("iTime", (float)glfwGetTime());
+			characterShader.setFloat("_moveSpeed", moveSpeed);
 		
 			//Draw Quad
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
@@ -118,6 +123,9 @@
 				ImGui::NewFrame();
 
 				ImGui::Begin("Settings");
+				ImGui::SliderFloat("Distortion Strength", &distStrength, 0.0f, 5.0f);
+				ImGui::SliderFloat("Character Move Speed", &moveSpeed, 0.0f, 10.0f);
+				ImGui::SliderFloat("Tiling", &tiling, 1.0f, 10.0f);
 				ImGui::End();
 
 				ImGui::Render();
