@@ -5,15 +5,16 @@ out vec2 UV;
 
 uniform float iTime;
 uniform float _moveSpeed;
+uniform float _charSize;
 
 void main(){
 	UV = vUV;
 	vec3 Pos = vPos;
 
 	float movementX = sin(iTime * _moveSpeed);
-    float movementY = cos((iTime* _moveSpeed) * 0.5) ; 
+    float movementY = cos((iTime * _moveSpeed) * 0.5) ; 
 
     Pos += vec3(movementX * 0.2, movementY * 0.2, 0.0);
 
-	gl_Position = vec4(Pos, 2.0);
+	gl_Position = vec4(Pos, pow(_charSize, -2) * 2);
 }

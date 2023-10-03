@@ -33,7 +33,7 @@
 		2, 3, 0
 	};
 
-	float distStrength = 0.5f, moveSpeed = 1.0f, tiling = 1.0f;
+	float distStrength = 0.5f, moveSpeed = 1.0f, tiling = 1.0f, charSize = 1.0f;
 
 	int main() {
 		printf("Initializing...");
@@ -112,6 +112,7 @@
 			characterShader.setInt("_CharacterShader", 0);
 			characterShader.setFloat("iTime", (float)glfwGetTime());
 			characterShader.setFloat("_moveSpeed", moveSpeed);
+			characterShader.setFloat("_charSize", charSize);
 		
 			//Draw Quad
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
@@ -125,6 +126,7 @@
 				ImGui::Begin("Settings");
 				ImGui::SliderFloat("Distortion Strength", &distStrength, 0.0f, 5.0f);
 				ImGui::SliderFloat("Character Move Speed", &moveSpeed, 0.0f, 10.0f);
+				ImGui::SliderFloat("Character Size", &charSize, 0.3f, 2.0f);
 				ImGui::SliderFloat("Tiling", &tiling, 1.0f, 10.0f);
 				ImGui::End();
 
