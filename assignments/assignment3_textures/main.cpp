@@ -126,7 +126,7 @@
 				ImGui::Begin("Settings");
 				ImGui::SliderFloat("Distortion Strength", &distStrength, 0.0f, 5.0f);
 				ImGui::SliderFloat("Character Move Speed", &moveSpeed, 0.0f, 10.0f);
-				ImGui::SliderFloat("Character Size", &charSize, 0.3f, 2.0f);
+				ImGui::SliderFloat("Character Size", &charSize, 0.3f, 5.0f);
 				ImGui::SliderFloat("Tiling", &tiling, 1.0f, 10.0f);
 				ImGui::End();
 

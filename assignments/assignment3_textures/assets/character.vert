@@ -16,5 +16,5 @@ void main(){
 
     Pos += vec3(movementX * 0.2, movementY * 0.2, 0.0);
 
-	gl_Position = vec4(Pos, pow(_charSize, -2) * 2);
+	gl_Position = vec4(Pos, 2 / _charSize);
 }
