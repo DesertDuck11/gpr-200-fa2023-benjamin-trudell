@@ -1,5 +1,4 @@
 #include "shader.h"
-#include "../ew/external/glad.h"
 
 namespace dd11 {
 	std::string loadShaderSourceFromFile(const std::string& filePath) {
@@ -101,5 +100,10 @@ namespace dd11 {
 	void Shader::setVec3Array(const std::string& name, int arrLength, float arr[][3]) const
 	{
 		glUniform3fv(glGetUniformLocation(m_id, name.c_str()), arrLength, *arr);
+	}
+
+	void Shader::setMat4(const std::string& name, const ew::Mat4& v) const
+	{
+		glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, GL_FALSE, &v[0][0]);
 	}
 }

@@ -12,11 +12,16 @@
 #include <ew/ewMath/vec3.h>
 #include <ew/procGen.h>
 
+#include <dd11/shader.h>
+#include <dd11/transformations.h>
+
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 //Square aspect ratio for now. We will account for this with projection later.
 const int SCREEN_WIDTH = 720;
 const int SCREEN_HEIGHT = 720;
+
+const int NUM_CUBES = 4;
 
 int main() {
 	printf("Initializing...");
@@ -54,7 +59,20 @@ int main() {
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	
 	//Cube mesh
-	ew::Mesh cubeMesh(ew::createCube(0.5f));
+	ew::Mesh cubeMesh1(ew::createCube(0.5f));
+	ew::Mesh cubeMesh2(ew::createCube(0.5f));
+	ew::Mesh cubeMesh3(ew::createCube(0.5f));
+	ew::Mesh cubeMesh4(ew::createCube(0.5f));
+
+	/*dd11::Transform cubes[4] =
+	{
+		Transform cube1, cube2, cube3, cube4
+	};*/
+
+	dd11::Transform cube1;
+	dd11::Transform cube2;
+	dd11::Transform cube3;
+	dd11::Transform cube4;
 	
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -66,8 +84,15 @@ int main() {
 		shader.use();
 
 		//TODO: Set model matrix uniform
+		shader.setMat4("_Model1", cube1.getModelMatrix());
+		shader.setMat4("_Model2", cube2.getModelMatrix());
+		shader.setMat4("_Model3", cube3.getModelMatrix());
+		shader.setMat4("_Model4", cube4.getModelMatrix());
 
-		cubeMesh.draw();
+		cubeMesh1.draw();
+		cubeMesh2.draw();
+		cubeMesh3.draw();
+		cubeMesh4.draw();
 
 		//Render UI
 		{
@@ -75,7 +100,18 @@ int main() {
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui::NewFrame();
 
-			ImGui::Begin("Transform");
+			ImGui::Begin("Settings");
+			for (size_t i = 0; i < NUM_CUBES; i++)
+			{
+				ImGui::PushID(i);
+				if (ImGui::CollapsingHeader("Transform")) {
+					ImGui::DragFloat3("Position", &cube1.position.x, 0.05f);
+					ImGui::DragFloat3("Rotation", &cube1.rotation.x, 1.0f);
+					ImGui::DragFloat3("Scale", &cube1.scale.x, 0.05f);
+				}
+				ImGui::PopID();
+			}
+
 			ImGui::End();
 
 			ImGui::Render();
