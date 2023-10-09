@@ -68,14 +68,6 @@ namespace dd11 {
 		ew::Mat4 getModelMatrix() const {
 			ew::Mat4 result = Identity();
 
-			//result = result * Translate(position);
-
-			//result = result * RotateX(rotation.x * CONVERT_TO_RADIANS);
-			//result = result * RotateY(rotation.y * CONVERT_TO_RADIANS);
-			//result = result * RotateZ(rotation.z * CONVERT_TO_RADIANS);
-
-			//result = result * Scale(scale);
-
 			return result = result
 				* Translate(position)
 				* RotateX(rotation.x * CONVERT_TO_RADIANS)
