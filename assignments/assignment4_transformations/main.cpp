@@ -14,6 +14,7 @@
 
 #include <dd11/shader.h>
 #include <dd11/transformations.h>
+#include <dd11/camera.h>;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 

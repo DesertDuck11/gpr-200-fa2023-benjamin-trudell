@@ -11,7 +11,7 @@
 #include <ew/shader.h>
 #include <ew/procGen.h>
 #include <ew/transform.h>
-#include <dd11/camera.h>
+#include <dd11/camera.h> 
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
@@ -22,6 +22,8 @@ const int SCREEN_HEIGHT = 720;
 const int NUM_CUBES = 4;
 ew::Transform cubeTransforms[NUM_CUBES];
 dd11::Camera camera;
+
+bool orbitting = false;
 
 int main() {
 	printf("Initializing...");
@@ -61,6 +63,16 @@ int main() {
 	//Cube mesh
 	ew::Mesh cubeMesh(ew::createCube(0.5f));
 
+	//Camera Values
+	camera.position = ew::Vec3(0.0f, 0.0f, 5.0f);
+	camera.target = ew::Vec3(0.0f, 0.0f, 0.0f);
+	camera.fov = 60.0f;
+	camera.aspectRatio = (float)(SCREEN_WIDTH) / (float)(SCREEN_HEIGHT);
+	camera.orthographic = false;
+	camera.orthoSize = 6.0f;
+	camera.nearPlane = 0.1f;
+	camera.farPlane = 100.0f;
+
 	//Cube positions
 	for (size_t i = 0; i < NUM_CUBES; i++)
 	{
@@ -76,12 +88,17 @@ int main() {
 
 		//Set uniforms
 		shader.use();
+		shader.setMat4("_View", camera.ViewMatrix());
+		shader.setMat4("_Projection", camera.ProjectionMatrix());
 
 		//TODO: Set model matrix uniform
 		for (size_t i = 0; i < NUM_CUBES; i++)
 		{
 			//Construct model matrix
-			shader.setMat4("_Model", cubeTransforms[i].getModelMatrix());
+			ew::Mat4 modelMatrix = cubeTransforms[i].getModelMatrix();
+			shader.setMat4("_Model", modelMatrix);
+
+			//Draw cube
 			cubeMesh.draw();
 		}
 
@@ -92,18 +109,45 @@ int main() {
 			ImGui::NewFrame();
 
 			ImGui::Begin("Settings");
-			ImGui::Text("Cubes");
-			for (size_t i = 0; i < NUM_CUBES; i++)
+			if (ImGui::CollapsingHeader("Cubes"))
 			{
-				ImGui::PushID(i);
-				if (ImGui::CollapsingHeader("Transform")) {
-					ImGui::DragFloat3("Position", &cubeTransforms[i].position.x, 0.05f);
-					ImGui::DragFloat3("Rotation", &cubeTransforms[i].rotation.x, 1.0f);
-					ImGui::DragFloat3("Scale", &cubeTransforms[i].scale.x, 0.05f);
+				for (size_t i = 0; i < NUM_CUBES; i++)
+				{
+					ImGui::PushID(i);
+					if (ImGui::CollapsingHeader("Transform")) {
+						ImGui::DragFloat3("Position", &cubeTransforms[i].position.x, 0.05f);
+						ImGui::DragFloat3("Rotation", &cubeTransforms[i].rotation.x, 1.0f);
+						ImGui::DragFloat3("Scale", &cubeTransforms[i].scale.x, 0.05f);
+					}
+					ImGui::PopID();
 				}
-				ImGui::PopID();
+			}			
+			if (ImGui::CollapsingHeader("Camera"))
+			{
+				ImGui::Checkbox("Orbit", &orbitting);
+				if (orbitting)
+				{
+					camera.position.x = cosf((float)glfwGetTime()) * 5.0;
+					camera.position.z = sinf((float)glfwGetTime()) * 5.0;
+				}
+				else
+				{
+					camera.position = ew::Vec3(0.0f, 0.0f, 5.0f);
+				}
+				ImGui::DragFloat3("Position", &camera.position.x, 0.05f);
+				ImGui::DragFloat3("Target", &camera.target.x, 0.05f);
+				ImGui::Checkbox("Orthographic", &camera.orthographic);
+				if (camera.orthographic)
+				{
+					ImGui::DragFloat("Orthographic Height", &camera.orthoSize, 1.0f);
+				}
+				else
+				{
+					ImGui::DragFloat("FOV", &camera.fov, 1.0f);
+				}
+				ImGui::DragFloat("Near Plane", &camera.nearPlane, 1.0f);
+				ImGui::DragFloat("Far Plane", &camera.farPlane, 1.0f);
 			}
-			ImGui::Text("Camera");
 			ImGui::End();
 			
 			ImGui::Render();
@@ -118,5 +162,6 @@ int main() {
 void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
+	camera.aspectRatio = (float)(width) / (float)(height);
 }
 
