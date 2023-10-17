@@ -130,10 +130,6 @@ int main() {
 					camera.position.x = cosf((float)glfwGetTime()) * 5.0;
 					camera.position.z = sinf((float)glfwGetTime()) * 5.0;
 				}
-				else
-				{
-					camera.position = ew::Vec3(0.0f, 0.0f, 5.0f);
-				}
 				ImGui::DragFloat3("Position", &camera.position.x, 0.05f);
 				ImGui::DragFloat3("Target", &camera.target.x, 0.05f);
 				ImGui::Checkbox("Orthographic", &camera.orthographic);
