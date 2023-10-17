@@ -14,6 +14,7 @@
 #include <dd11/camera.h> 
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+void moveCamera(GLFWwindow* window, dd11::Camera* camera, dd11::CameraControls* controls);
 
 //Projection will account for aspect ratio!
 const int SCREEN_WIDTH = 1080;
@@ -22,6 +23,7 @@ const int SCREEN_HEIGHT = 720;
 const int NUM_CUBES = 4;
 ew::Transform cubeTransforms[NUM_CUBES];
 dd11::Camera camera;
+dd11::CameraControls cameraControls;
 
 bool orbitting = false;
 
@@ -85,6 +87,8 @@ int main() {
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		//Clear both color buffer AND depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		moveCamera(window, &camera, &cameraControls);
 
 		//Set uniforms
 		shader.use();
@@ -161,3 +165,62 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 	camera.aspectRatio = (float)(width) / (float)(height);
 }
 
+void moveCamera(GLFWwindow* window, dd11::Camera* camera, dd11::CameraControls* controls) {
+	//If right mouse is not held, release cursor and return early.
+	if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2)) {
+		//Release cursor
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		controls->firstMouse = true;
+		return;
+	}
+	//GLFW_CURSOR_DISABLED hides the cursor, but the position will still be changed as we move our mouse.
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	//Get screen mouse position this frame
+	double mouseX, mouseY;
+	glfwGetCursorPos(window, &mouseX, &mouseY);
+
+	//If we just started right clicking, set prevMouse values to current position.
+	//This prevents a bug where the camera moves as soon as we click.
+	if (controls->firstMouse) {
+		controls->firstMouse = false;
+		controls->prevMouseX = mouseX;
+		controls->prevMouseY = mouseY;
+	}
+
+	//TODO: Get mouse position delta for this frame
+	float deltaMouseX = mouseX - controls->prevMouseX;
+	float deltaMouseY = mouseY - controls->prevMouseY;
+
+
+	//TODO: Add to yaw and pitch
+	controls->yaw += (deltaMouseX)*controls->mouseSensitivity;
+	controls->pitch -= (deltaMouseY)*controls->mouseSensitivity;
+
+
+	//TODO: Clamp pitch between -89 and 89 degrees
+	if (controls->pitch > 89) 
+	{
+		controls->pitch = 89;
+	}
+	else if (controls->pitch < -89)
+	{
+		controls->pitch = -89;
+	}
+	
+	//Remember previous mouse position
+	controls->prevMouseX = mouseX;
+	controls->prevMouseY = mouseY;
+
+	controls->yaw *= dd11::CONVERT_TO_RADIANS;
+	controls->pitch *= dd11::CONVERT_TO_RADIANS;
+
+	//Construct forward vector using yaw and pitch. Don't forget to convert to radians!
+	ew::Vec3 forward = ew::Vec3(
+		cos(controls->yaw) * cos(controls->pitch), 
+		sin(controls->pitch), 
+		sin(controls->yaw) * cos(controls->pitch)
+	);
+	//By setting target to a point in front of the camera along its forward direction, our LookAt will be updated accordingly when rendering.
+	camera->target = camera->position + forward;
+}
