@@ -44,6 +44,10 @@ ew::MeshData dd11::createCylinder(float height, float radius, int numSegments)
 		cylinder.vertices.push_back(v);
 	}
 
+	//Bottom Center
+	v.pos = ew::Vec3(0, bottomY, 0);
+	cylinder.vertices.push_back(v);
+
 	//Bottom Ring
 	for (int i = 0; i <= numSegments; i++)
 	{
@@ -52,29 +56,27 @@ ew::MeshData dd11::createCylinder(float height, float radius, int numSegments)
 		cylinder.vertices.push_back(v);
 	}
 
-	//Bottom Center
-	v.pos = ew::Vec3(0, bottomY, 0);
-	cylinder.vertices.push_back(v);
-
 	//Cap Indices
-	float start = 0, center = 0;
+	float start = 1, center = 0;
 	for (int i = 0; i < numSegments; i++) {
 		cylinder.indices.push_back(start + i);
 		cylinder.indices.push_back(center);
 		cylinder.indices.push_back(start + i + 1);
 	}
-
-	//start = numSegments;
-	center++; 
-
+	
+	start += numSegments + 2;
+	center+= numSegments + 2;
+	
 	for (int i = 0; i < numSegments; i++) {
-		cylinder.indices.push_back(start + i + numSegments);
-		cylinder.indices.push_back(center);
-		cylinder.indices.push_back(start + i + 1 + numSegments);
-	}
 
-	float sideStart = start, columns = numSegments + 1;
-	for (int i = 0; i < columns; i++)
+		cylinder.indices.push_back(center);
+		cylinder.indices.push_back(start + i);
+		cylinder.indices.push_back(start + i + 1);
+	}
+	start = 1;
+	
+	float sideStart = start, columns = numSegments + 2;
+	for (int i = 0; i < numSegments; i++)
 	{
 		start = sideStart + i;
 
@@ -87,7 +89,7 @@ ew::MeshData dd11::createCylinder(float height, float radius, int numSegments)
 		cylinder.indices.push_back(start + 1);
 		cylinder.indices.push_back(start + columns + 1);
 	}	
-
+	
 	return cylinder;
 }
 
@@ -101,9 +103,9 @@ ew::MeshData dd11::createPlane(float size, int subdivisions)
 	{
 		for (int col = 0; col <= subdivisions; col++)
 		{
-			v.pos = ew::Vec3(size * (col / subdivisions), 0, -size * (row / subdivisions));
-			v.normal = ew::Vec3(0, 0, 1);
-			v.uv = ew::Vec2(1 / subdivisions, 1 / subdivisions);
+			v.pos = ew::Vec3(size * ((float)col / subdivisions), 0, -size * ((float)row / subdivisions));
+			v.normal = ew::Vec3(0, 1, 0);
+			v.uv = ew::Vec2(1 - (float)row / subdivisions, (float)col / subdivisions);
 			plane.vertices.push_back(v);
 		}
 	}

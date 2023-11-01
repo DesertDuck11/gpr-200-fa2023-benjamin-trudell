@@ -65,10 +65,10 @@ namespace ew {
 			if (glfwGetKey(window, GLFW_KEY_A)) {
 				camera->position -= right * moveDelta;
 			}
-			if (glfwGetKey(window, GLFW_KEY_E)) {
+			if (glfwGetKey(window, GLFW_KEY_E)|| glfwGetKey(window, GLFW_KEY_SPACE)) {
 				camera->position += up * moveDelta;
 			}
-			if (glfwGetKey(window, GLFW_KEY_Q)) {
+			if (glfwGetKey(window, GLFW_KEY_Q) || glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
 				camera->position -= up * moveDelta;
 			}
 
