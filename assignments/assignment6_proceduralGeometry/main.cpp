@@ -41,6 +41,9 @@ struct AppSettings {
 ew::Camera camera;
 ew::CameraController cameraController;
 
+float sphereRadius = 1.0f, cylinderHeight = 2.0f, cylinderRadius = 0.5f, planeSize = 1.0f, cubeSize = 0.5f, torusInner = 1.0f, torusOuter = 0.5f;
+int sphereSegments = 20, cylinderSegments = 8, planeDivisions = 5, torusRings = 15, torusRingsDivisions = 15;
+
 int main() {
 	printf("Initializing...");
 	if (!glfwInit()) {
@@ -80,27 +83,31 @@ int main() {
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
 	//Create cube
-	ew::MeshData cubeMeshData = ew::createCube(0.5f);
+	ew::MeshData cubeMeshData = ew::createCube(cubeSize);
 	ew::Mesh cubeMesh(cubeMeshData);
 
 	//Create Mesh Data
-	ew::MeshData planeMeshData = dd11::createPlane(1.0f, 5);
-	ew::MeshData cylinderMeshData = dd11::createCylinder(2.0, 0.5, 8);
-	ew::MeshData sphereMeshData = dd11::createSphere(1.0, 20);
+	ew::MeshData planeMeshData = dd11::createPlane(planeSize, planeDivisions);
+	ew::MeshData cylinderMeshData = dd11::createCylinder(cylinderHeight, cylinderRadius, cylinderSegments);
+	ew::MeshData sphereMeshData = dd11::createSphere(sphereRadius, sphereSegments);
+	ew::MeshData torusMeshData = dd11::createTorus(torusRings, torusRingsDivisions, torusInner,  torusOuter);
 
 	//Create Mesh Renderer
 	ew::Mesh planeMesh(planeMeshData);
 	ew::Mesh cylinderMesh(cylinderMeshData);
 	ew::Mesh sphereMesh(sphereMeshData);
+	ew::Mesh torusMesh(torusMeshData);
 
 	//Initialize transforms
 	ew::Transform cubeTransform;
 	ew::Transform planeTransform;
 	ew::Transform cylinderTransform;
 	ew::Transform sphereTransform;
+	ew::Transform torusTransform;
 	planeTransform.position = ew::Vec3(1.0f, 0.0f, 0.0f);
 	cylinderTransform.position = ew::Vec3(-2.0f, 0.0f, 0.0f);
 	sphereTransform.position = ew::Vec3(-4.0f, 0.0f, 0.0f);
+	torusTransform.position = ew::Vec3(4.0f, 0.0f, 0.0f);
 
 	resetCamera(camera,cameraController);
 
@@ -143,6 +150,8 @@ int main() {
 		cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		shader.setMat4("_Model", sphereTransform.getModelMatrix());
 		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", torusTransform.getModelMatrix());
+		torusMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		//Render UI
 		{
@@ -186,6 +195,39 @@ int main() {
 				else
 					glDisable(GL_CULL_FACE);
 			}
+
+			ImGui::Text("Cylinder Controls");
+			ImGui::DragFloat3("Cylinder Scale", &cylinderTransform.scale.x, 0.1f);
+			ImGui::DragFloat3("Cylinder Transform", &cylinderTransform.position.x, 0.1f);
+			ImGui::DragInt("Cylinder Segments", &cylinderSegments, 0.1, 3.0, 1000000000.0);
+			cylinderMeshData = dd11::createCylinder(cylinderHeight, cylinderRadius, cylinderSegments);
+			cylinderMesh.load(cylinderMeshData);
+
+			ImGui::Text("Sphere Controls");
+			ImGui::DragFloat3("Sphere Scale", &sphereTransform.scale.x, 0.1f);
+			ImGui::DragFloat3("Sphere Transform", &sphereTransform.position.x, 0.1f);
+			ImGui::DragInt("Sphere Segments", &sphereSegments, 0.1, 3.0, 1000000000.0);
+			sphereMeshData = dd11::createSphere(sphereRadius, sphereSegments);
+			sphereMesh.load(sphereMeshData);
+
+			ImGui::Text("Plane Controls");
+			ImGui::DragFloat3("Plane Size", &planeTransform.scale.x, 0.1f);
+			ImGui::DragFloat3("Plane Transform", &planeTransform.position.x, 0.1f);
+			ImGui::DragInt("Plane Divisions", &planeDivisions, 0.1, 1.0, 1000000000.0);
+			planeMeshData = dd11::createPlane(planeSize, planeDivisions);
+			planeMesh.load(planeMeshData);
+
+			ImGui::Text("Cube Controls");
+			ImGui::DragFloat3("Cube Size", &cubeTransform.scale.x, 0.1f);
+			ImGui::DragFloat3("Cube Transform", &cubeTransform.position.x, 0.1f);
+
+			ImGui::Text("Torus Controls");
+			ImGui::DragFloat3("Torus Scale", &torusTransform.scale.x, 0.1f);
+			ImGui::DragFloat3("Torus Transform", &torusTransform.position.x, 0.1f);
+			ImGui::DragInt("Torus Ring Count", &torusRings, 0.1, 4.0, 1000000000.0);
+			torusRingsDivisions = torusRings;
+			torusMeshData = dd11::createTorus(torusRings, torusRingsDivisions, torusInner, torusOuter);
+			torusMesh.load(torusMeshData);
 			ImGui::End();
 			
 			ImGui::Render();

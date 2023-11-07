@@ -80,28 +80,14 @@ ew::MeshData dd11::createCylinder(float height, float radius, int numSegments)
 	cylinder.vertices.push_back(v);
 
 	//Top Ring (Top Face)
-	/*for (int i = 0; i <= numSegments; i++)
-	{
-		float theta = i * thetaStep;
-		v.pos = ew::Vec3(cos(theta) * radius, topY, sin(theta) * radius);
-		v.normal = ew::Vec3(0, 1, 0);
-		u = float(i) / numSegments;
-		vTop = 1.0f;
-		v.uv = ew::Vec2(u, vTop);
-		cylinder.vertices.push_back(v);
-	}*/
-
-	//Top Ring (Side Face)
 	for (int i = 0; i <= numSegments; i++)
 	{
 		float theta = i * thetaStep;
 		v.pos = ew::Vec3(cos(theta) * radius, topY, sin(theta) * radius);
-		v.normal = ew::Normalize(v.pos - ew::Vec3(0, topY, 0));
-		u = float(i) / numSegments;
-		vTop = 0.0f;
-		v.uv = ew::Vec2(u, vTop);
+		v.normal = ew::Vec3(0, 1, 0);
+		v.uv = ew::Vec2((sin(theta) + 1) / 2, (cos(theta) + 1) / 2);
 		cylinder.vertices.push_back(v);
-	}	
+	}
 
 	//Bottom Center
 	v.pos = ew::Vec3(0, bottomY, 0);
@@ -109,30 +95,39 @@ ew::MeshData dd11::createCylinder(float height, float radius, int numSegments)
 	v.uv = ew::Vec2(0.5f, 0.5f);
 	cylinder.vertices.push_back(v);
 
+	//Bottom Ring (Bottom Face)
+	for (int i = 0; i <= numSegments; i++)
+	{
+		float theta = i * thetaStep;
+		v.pos = ew::Vec3(cos(theta) * radius, bottomY, sin(theta) * radius);
+		v.normal = ew::Vec3(0, -1, 0);
+		v.uv = ew::Vec2((sin(theta) + 1) / 2, (cos(theta) + 1) / 2);
+		cylinder.vertices.push_back(v);
+	}
+
+	//
+	// Top Ring (Side Face)
+	for (int i = 0; i <= numSegments; i++)
+	{
+		float theta = i * thetaStep;
+		v.pos = ew::Vec3(cos(theta) * radius, topY, sin(theta) * radius);
+		v.normal = ew::Normalize(ew::Vec3(cos(theta), 0, sin(theta)));
+		u = float(i) / numSegments;
+		v.uv = ew::Vec2(u, 1);
+		cylinder.vertices.push_back(v);
+	}
+	
 	//Bottom Ring (Side Face)
 	for (int i = 0; i <= numSegments; i++)
 	{
 		float theta = i * thetaStep;
 		v.pos = ew::Vec3(cos(theta) * radius, bottomY, sin(theta) * radius);
-		v.normal = ew::Normalize(v.pos - ew::Vec3(0, bottomY, 0));
-		u = float(i) / numSegments;
-		vBottom = 0.0f;
-		v.uv = ew::Vec2(u, vBottom);
+		v.normal = ew::Normalize(ew::Vec3(cos(theta), 0, sin(theta)));
+		u = float(i) / numSegments;;
+		v.uv = ew::Vec2(u, 0);
 		cylinder.vertices.push_back(v);
 	}
-
-	//Bottom Ring (Bottom Face)
-	/*for (int i = 0; i <= numSegments; i++)
-	{
-		float theta = i * thetaStep;
-		v.pos = ew::Vec3(cos(theta) * radius, bottomY, sin(theta) * radius);
-		v.normal = ew::Vec3(0, -1, 0);
-		u = float(i) / numSegments;
-		vBottom = 1.0f;
-		v.uv = ew::Vec2(u, vBottom);
-		cylinder.vertices.push_back(v);
-	}*/
-
+	
 	//Cap Indices
 	int start = 1, center = 0;
 	for (int i = 0; i < numSegments; i++) {
@@ -145,14 +140,14 @@ ew::MeshData dd11::createCylinder(float height, float radius, int numSegments)
 	center+= numSegments + 2;
 	
 	for (int i = 0; i < numSegments; i++) {
-
+	
 		cylinder.indices.push_back(center);
 		cylinder.indices.push_back(start + i);
 		cylinder.indices.push_back(start + i + 1);
 	}
 	start = 1;
 	
-	int sideStart = start, columns = numSegments + 2;
+	int sideStart = 2 * (numSegments + 1) + 2, columns = numSegments + 1;
 	for (int i = 0; i < numSegments; i++)
 	{
 		start = sideStart + i;
@@ -209,4 +204,49 @@ ew::MeshData dd11::createPlane(float size, int subdivisions)
 	}
 
 	return plane;
+}
+
+ew::MeshData dd11::createTorus(int outerSegments, int innerSegments, float outerRadius, float innerRadius)
+{
+	ew::MeshData torus;
+	ew::Vertex v;
+
+	//Ring Radius
+	float phi = 0.0, deltaPhi = (2 * ew::PI) / outerSegments;
+	//Torus Radius
+	float theta = 0.0, deltaTheta = (2 * ew::PI) / innerSegments;
+
+	//Vertices
+	for (int i = 0; i <= outerSegments; i++)
+	{
+		phi = i * deltaPhi;
+		for (int j = 0; j <= innerSegments; j++)
+		{
+			theta = j * deltaTheta;
+			v.pos.x = cos(theta) * (outerRadius + cos(phi) * innerRadius);
+			v.pos.y = sin(theta) * (outerRadius + cos(phi) * innerRadius);
+			v.pos.z = sin(phi) * innerRadius;
+			v.normal = ew::Normalize(v.pos);
+			v.uv.x = (float)(j) / innerSegments;
+			v.uv.y = (float)(i) / outerSegments;
+			torus.vertices.push_back(v);
+		}
+	}
+
+	//Indices
+	for (int i = 0; i <= outerSegments - 1; i++)
+	{
+		for (int j = 0; j <= innerSegments; j++)
+		{
+			torus.indices.push_back(i + ((j + 1) * innerSegments));
+			torus.indices.push_back(i + (j * innerSegments));			
+			torus.indices.push_back((i + 1) + ((j + 1) * innerSegments));
+
+			torus.indices.push_back((i + 1) + ((j + 1) * innerSegments));
+			torus.indices.push_back(i + (j * innerSegments));			
+			torus.indices.push_back((i + 1) + (j * innerSegments));
+		}
+	}
+
+	return torus;
 }
