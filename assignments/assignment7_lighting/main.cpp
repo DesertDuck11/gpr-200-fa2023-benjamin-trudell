@@ -27,6 +27,22 @@ ew::Vec3 bgColor = ew::Vec3(0.1f);
 ew::Camera camera;
 ew::CameraController cameraController;
 
+struct Light {
+	ew::Vec3 position; //World space
+	ew::Vec3 color; //RGB
+};
+
+struct Material {
+	float ambientK; //Ambient coefficient (0-1)
+	float diffuseK; //Diffuse coefficient (0-1)
+	float specular; //Specular coefficient (0-1)
+	float shininess; //Shininess
+};
+
+const int MAX_LIGHTS = 4;
+Light lights[MAX_LIGHTS];
+Material material;
+
 int main() {
 	printf("Initializing...");
 	if (!glfwInit()) {
@@ -59,6 +75,7 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 	ew::Shader shader("assets/defaultLit.vert", "assets/defaultLit.frag");
+	ew::Shader lightShader("assets/unlit.vert", "assets/unlit.frag");
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
 	//Create cube
@@ -66,6 +83,8 @@ int main() {
 	ew::Mesh planeMesh(ew::createPlane(5.0f, 5.0f, 10));
 	ew::Mesh sphereMesh(ew::createSphere(0.5f, 64));
 	ew::Mesh cylinderMesh(ew::createCylinder(0.5f, 1.0f, 32));
+
+	ew::Mesh lightMesh(ew::createSphere(0.05f, 64));
 
 	//Initialize transforms
 	ew::Transform cubeTransform;
@@ -75,6 +94,7 @@ int main() {
 	planeTransform.position = ew::Vec3(0, -1.0, 0);
 	sphereTransform.position = ew::Vec3(-1.5f, 0.0f, 0.0f);
 	cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
+
 
 	resetCamera(camera,cameraController);
 
@@ -94,6 +114,7 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shader.use();
+		
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		shader.setInt("_Texture", 0);
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
@@ -107,11 +128,28 @@ int main() {
 
 		shader.setMat4("_Model", sphereTransform.getModelMatrix());
 		sphereMesh.draw();
-
+		
 		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
 		cylinderMesh.draw();
 
+		shader.setVec3("_Lights[0].position", lights[0].position);
+		shader.setVec3("_Lights[0].color", lights[0].color);
+
+		shader.setFloat("_Material.ambientK", material.ambientK);
+		shader.setFloat("_Material.diffuseK", material.diffuseK);
+		shader.setFloat("_Material.specular", material.specular);
+		shader.setFloat("_Material.shininess", material.shininess);
+		
 		//TODO: Render point lights
+
+		lightShader.use();
+
+		for (int i = 0; i < MAX_LIGHTS; i++)
+		{
+			lightShader.setMat4("_Model", sphereTransform.getModelMatrix());
+			lightShader.setVec3("_Color", lights[i].color);
+			lightMesh.draw();
+		}
 
 		//Render UI
 		{
@@ -140,6 +178,16 @@ int main() {
 			}
 
 			ImGui::ColorEdit3("BG color", &bgColor.x);
+
+			for (int i = 0; i < MAX_LIGHTS; i++)
+			{
+				ImGui::PushID(i);
+				if (ImGui::CollapsingHeader("Light")) {
+					ImGui::ColorEdit3("Color", &lights[i].color.x, 1.0f);
+				}
+				ImGui::PopID();
+			}
+
 			ImGui::End();
 			
 			ImGui::Render();
@@ -170,5 +218,4 @@ void resetCamera(ew::Camera& camera, ew::CameraController& cameraController) {
 	cameraController.yaw = 0.0f;
 	cameraController.pitch = 0.0f;
 }
-
 
