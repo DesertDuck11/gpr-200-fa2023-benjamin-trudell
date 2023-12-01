@@ -210,11 +210,12 @@ int main() {
 		}
 
 		//Skyboix shader
+		glDisable(GL_CULL_FACE);
 		skybocks.use();
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
-		shader.setMat4("_Model", skyboxTransform.getModelMatrix());
+		skybocks.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+		skybocks.setMat4("_Model", skyboxTransform.getModelMatrix());
 		skyboxMesh.draw();
+		glEnable(GL_CULL_FACE);
 
 		//Render UI
 		{
