@@ -214,7 +214,7 @@ int main() {
 		skybocks.use();
 		skybocks.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 		skybocks.setMat4("_Model", skyboxTransform.getModelMatrix());
-		skyboxMesh.draw();
+		//skyboxMesh.draw();
 		glEnable(GL_CULL_FACE);
 
 		//Render UI
@@ -227,13 +227,23 @@ int main() {
 			if (ImGui::CollapsingHeader("Camera")) {
 				ImGui::DragFloat3("Position", &camera.position.x, 0.1f);
 				ImGui::DragFloat3("Target", &camera.target.x, 0.1f);
-				ImGui::Checkbox("Orthographic", &camera.orthographic);
-				if (camera.orthographic) {
-					ImGui::DragFloat("Ortho Height", &camera.orthoHeight, 0.1f);
+				ImGui::Checkbox("Other Mode", &camera.other);
+				if (!camera.other)
+				{
+					ImGui::Checkbox("Orthographic", &camera.orthographic);
+					if (camera.orthographic) {
+						ImGui::DragFloat("Ortho Height", &camera.orthoHeight, 0.1f);
+					}
+					else {
+						ImGui::SliderFloat("FOV", &camera.fov, 0.0f, 180.0f);
+					}
 				}
-				else {
+				else
+				{
+					ImGui::DragFloat("Start Height", &camera.orthoHeight, 0.1f);
 					ImGui::SliderFloat("FOV", &camera.fov, 0.0f, 180.0f);
 				}
+				
 				ImGui::DragFloat("Near Plane", &camera.nearPlane, 0.1f, 0.0f);
 				ImGui::DragFloat("Far Plane", &camera.farPlane, 0.1f, 0.0f);
 				ImGui::DragFloat("Move Speed", &cameraController.moveSpeed, 0.1f);

@@ -13,11 +13,15 @@ namespace ew {
 		bool orthographic = false;
 		float orthoHeight = 6.0f;
 		float aspectRatio = 1.77f;
+		bool other = false;
+		float time = 0.0;
 
 		inline ew::Mat4 ViewMatrix()const {
 			return ew::LookAt(position, target, ew::Vec3(0, 1, 0));
 		}
 		inline ew::Mat4 ProjectionMatrix()const {
+			if (other)
+				return ew::OtherPerspective(orthoHeight, orthoHeight, aspectRatio, nearPlane, farPlane, time);
 
 			if (orthographic) {
 				return ew::Orthographic(orthoHeight, aspectRatio, nearPlane, farPlane);

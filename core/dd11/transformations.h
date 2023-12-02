@@ -127,4 +127,18 @@ namespace dd11 {
 
 		return perspectiveMatrix;
 	};
-}
+
+	inline ew::Mat4 OtherMode(float fov, float aspect, float near, float far) {			 
+		float tanHalfFOV = tanf(fov / 2.0f);											 
+																						 
+		ew::Mat4 perspectiveMatrix(														 
+			1.0f / (aspect * tanHalfFOV), 0, 0, 0,										 
+			0, 1.0f / tanHalfFOV, 0, 0,													 
+			0, 0, (near + far) / (near - far), 2.0f * far * near / (near - far),		 
+			0, 0, -1, 0																	 
+		);																				 
+																						 
+		return perspectiveMatrix;														 
+	};																					 
+}																						 
+																						 
