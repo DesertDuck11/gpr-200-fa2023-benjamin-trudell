@@ -5,7 +5,8 @@ layout(location = 2) in vec2 vUV;
 
 uniform mat4 _Model;
 uniform mat4 _ViewProjection;
-
+out vec2 UV;
 void main(){
+	UV = vUV;
 	gl_Position = _ViewProjection * _Model * vec4(vPos, 1.0);
 }

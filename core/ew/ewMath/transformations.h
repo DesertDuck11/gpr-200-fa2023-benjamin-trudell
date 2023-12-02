@@ -132,7 +132,7 @@ namespace ew {
 		m[3][3] = 1.0f;
 		return m;
 	};
-
+	/*
 	inline ew::Mat4 OtherPerspective(float startHeight, float endHeight, float aspect, float n, float f, float time) {
 		float st = startHeight / 2;
 		float sr = (startHeight * aspect) / 2;
@@ -159,5 +159,5 @@ namespace ew {
 	inline float lerp(float a, float b, float t)
 	{
 		return a + t * (b - a);
-	}
+	}*/
 }

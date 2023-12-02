@@ -20,9 +20,9 @@ namespace ew {
 			return ew::LookAt(position, target, ew::Vec3(0, 1, 0));
 		}
 		inline ew::Mat4 ProjectionMatrix()const {
-			if (other)
+			/*if (other)
 				return ew::OtherPerspective(orthoHeight, orthoHeight, aspectRatio, nearPlane, farPlane, time);
-
+*/
 			if (orthographic) {
 				return ew::Orthographic(orthoHeight, aspectRatio, nearPlane, farPlane);
 			}

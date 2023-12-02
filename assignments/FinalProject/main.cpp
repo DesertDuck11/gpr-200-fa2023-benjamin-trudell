@@ -214,7 +214,10 @@ int main() {
 		skybocks.use();
 		skybocks.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 		skybocks.setMat4("_Model", skyboxTransform.getModelMatrix());
-		//skyboxMesh.draw();
+		skybocks.setVec3("dayColor", ew::Vec3(1.0));
+		skybocks.setVec3("nightColor", ew::Vec3(0.0));
+		skybocks.setVec3("sunColor", ew::Vec3(0, 0, 1.0));
+		skyboxMesh.draw();
 		glEnable(GL_CULL_FACE);
 
 		//Render UI
