@@ -75,6 +75,7 @@ int main() {
 	ew::Shader lightShader("assets/unlit.vert", "assets/unlit.frag");
 	ew::Shader shader("assets/defaultLit.vert", "assets/defaultLit.frag");
 	ew::Shader skybocks("assets/skybox.vert", "assets/skybox.frag");
+	ew::Shader terrain("assets/terrain.vert", "assets/terrain.frag");
 
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg", GL_REPEAT, GL_LINEAR);
 
@@ -85,6 +86,8 @@ int main() {
 	ew::Mesh cylinderMesh(ew::createCylinder(0.5f, 1.0f, 32));
 	//Skybox mesh
 	ew::Mesh skyboxMesh(ew::createSphere(50.0f, 64));
+	//Terrain mesh
+	ew::Mesh terrainMesh(ew::createPlane(50.f, 50.f, 50));
 
 	ew::Mesh lightMesh[MAX_LIGHTS];
 
@@ -100,6 +103,7 @@ int main() {
 	ew::Transform cylinderTransform;
 	//Skybox transform
 	ew::Transform skyboxTransform;
+	ew::Transform terrainTransform;
 
 	ew::Transform lightTransform[4];
 	
@@ -108,6 +112,7 @@ int main() {
 	cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
 	//Skybox position
 	skyboxTransform.position = ew::Vec3(0.0f, 0.0f, 0.0f);
+	terrainTransform.position = ew::Vec3(0.0f, -1.0f, 0.0f);
 
 	Light lights[MAX_LIGHTS];
 
@@ -182,7 +187,7 @@ int main() {
 		cubeMesh.draw();
 
 		shader.setMat4("_Model", planeTransform.getModelMatrix());
-		planeMesh.draw();
+		//planeMesh.draw();
 
 		shader.setMat4("_Model", sphereTransform.getModelMatrix());
 		sphereMesh.draw();
@@ -197,6 +202,28 @@ int main() {
 		shader.setInt("numLights", numLights);
 		shader.setFloat("lightIntensity", lightIntensity);
 
+		//Terrain Shader
+		terrain.use();
+		terrain.setVec3("camPos", camera.position);
+		terrain.setMat4("_Model", terrainTransform.getModelMatrix());
+		terrain.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+		terrain.setVec3("_Color", ew::Vec3(0.0, 0.5, 0.0));
+
+		for (int i = 0; i < numLights; i++)
+		{
+			terrain.setVec3("_Lights[" + std::to_string(i) + "].position", lights[i].position);
+			terrain.setVec3("_Lights[" + std::to_string(i) + "].color", lights[i].color);
+		}
+
+		terrain.setFloat("shininess", material.shininess);
+		terrain.setFloat("ambient", material.ambientK);
+		terrain.setFloat("specular", material.specular);
+		terrain.setFloat("diffuse", material.diffuseK);
+		terrain.setInt("numLights", numLights);
+		terrain.setFloat("lightIntensity", lightIntensity);
+
+		terrainMesh.draw();
+
 		//TODO: Render point lights
 
 		lightShader.use();
@@ -209,6 +236,8 @@ int main() {
 			lightMesh[i].draw();
 		}
 
+		
+
 		//Skyboix shader
 		glDisable(GL_CULL_FACE);
 		skybocks.use();
@@ -216,7 +245,7 @@ int main() {
 		skybocks.setMat4("_Model", skyboxTransform.getModelMatrix());
 		skybocks.setVec3("dayColor", ew::Vec3(1.0));
 		skybocks.setVec3("nightColor", ew::Vec3(0.0));
-		skybocks.setVec3("sunColor", ew::Vec3(0, 0, 1.0));
+		skybocks.setVec3("sunColor", ew::Vec3(1.0, 0, 1.0));
 		skyboxMesh.draw();
 		glEnable(GL_CULL_FACE);
 
