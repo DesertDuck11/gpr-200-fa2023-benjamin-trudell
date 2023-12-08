@@ -14,6 +14,7 @@
 #include <ew/transform.h>
 #include <ew/camera.h>
 #include <ew/cameraController.h>
+#include <dd11/terrain.h>
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
@@ -40,6 +41,11 @@ ew::Vec3 bgColor = ew::Vec3(0.1f);
 
 ew::Camera camera;
 ew::CameraController cameraController;
+
+int width = 10;
+int depth = 10;
+float scale = 0.1f;
+int subdivisions = 100;
 
 int main() {
 	printf("Initializing...");
@@ -87,7 +93,9 @@ int main() {
 	//Skybox mesh
 	ew::Mesh skyboxMesh(ew::createSphere(50.0f, 64));
 	//Terrain mesh
-	ew::Mesh terrainMesh(ew::createPlane(50.f, 50.f, 50));
+	//ew::Mesh terrainMesh(ew::createPlane(50.f, 50.f, 50));
+
+	ew::Mesh terrainMesh = dd11::generateTerrain(width, depth, scale, subdivisions);
 
 	ew::Mesh lightMesh[MAX_LIGHTS];
 
@@ -112,7 +120,7 @@ int main() {
 	cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
 	//Skybox position
 	skyboxTransform.position = ew::Vec3(0.0f, 0.0f, 0.0f);
-	terrainTransform.position = ew::Vec3(0.0f, -1.0f, 0.0f);
+	terrainTransform.position = ew::Vec3(-50.0f, -5.0f, -50.0f);
 
 	Light lights[MAX_LIGHTS];
 
@@ -207,7 +215,7 @@ int main() {
 		terrain.setVec3("camPos", camera.position);
 		terrain.setMat4("_Model", terrainTransform.getModelMatrix());
 		terrain.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
-		terrain.setVec3("_Color", ew::Vec3(0.0, 0.5, 0.0));
+		terrain.setVec3("_Color", ew::Vec3(1.0f,1.0f,1.0f));
 
 		for (int i = 0; i < numLights; i++)
 		{
