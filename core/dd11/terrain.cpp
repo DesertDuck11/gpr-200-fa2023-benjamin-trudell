@@ -58,9 +58,27 @@ ew::MeshData dd11::generateTerrain(int width, int depth, float scale, int subdiv
     ew::MeshData terrain;
     ew::Vertex v;
 
+    const int numOctaves = 6;
+    const float persistence = 0.75f; // controls the amplitude decrease between octaves
+    const float lacunarity = 2.5f; // controls the frequency increase between octaves
+
     for (int z = 0; z <= subdivisions; ++z) {
         for (int x = 0; x <= subdivisions; ++x) {
-            float height = perlin((x + width) * scale, (z + depth) * scale) * 10.0f;
+            float frequency = 1.0f;
+            float amplitude = 1.0f;
+            float height = 0.0f;
+
+            for (int i = 0; i < numOctaves; ++i) {
+                float perlinX = (x + width) * scale * frequency;
+                float perlinY = (z + depth) * scale * frequency;
+
+                height += perlin(perlinX, perlinY) * amplitude;
+
+                amplitude *= persistence;
+                frequency *= lacunarity;
+            }
+
+            height = (height + 1.0f) * 5.0f;
 
             v.pos = ew::Vec3((float)(x) * width, height, (float)(z) * depth);
             v.normal = ew::Vec3(0, 1, 0);
@@ -70,7 +88,6 @@ ew::MeshData dd11::generateTerrain(int width, int depth, float scale, int subdiv
         }
     }
 
-    // Generate indices for triangles
     for (int z = 0; z < subdivisions; ++z) {
         for (int x = 0; x < subdivisions; ++x) {
             int topLeft = z * (subdivisions + 1) + x;
@@ -90,3 +107,4 @@ ew::MeshData dd11::generateTerrain(int width, int depth, float scale, int subdiv
 
     return terrain;
 }
+
