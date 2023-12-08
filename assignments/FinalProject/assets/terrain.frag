@@ -7,6 +7,8 @@ in Surface{
 	vec3 WorldNormal;
 }fs_in;
 
+in float heightY;
+
 uniform vec3 _Color;
 
 struct Light
@@ -27,6 +29,11 @@ uniform int numLights;
 uniform float lightIntensity;
 
 void main(){
+	vec3 textCol;
+	if(heightY>1)
+		textCol = vec3(1.0);
+	else
+		textCol = mix(vec3(0.0), vec3(1.0), heightY / 1.25);
 	vec3 ambient = vec3(1.0) * ambient;
 	vec3 finalLight = vec3(0);
 	for(int i = 0; i < numLights; i++)
@@ -62,6 +69,6 @@ void main(){
 	}
 	vec3 color = ambient + finalLight;
 
-	vec4 textColor = vec4(_Color,1.0);
+	vec4 textColor = vec4(textCol,1.0);
 	FragColor = vec4(textColor.rgb * color, textColor.a);
 }
