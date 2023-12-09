@@ -169,7 +169,12 @@ int main() {
 
 		//Update camera
 		camera.aspectRatio = (float)SCREEN_WIDTH / SCREEN_HEIGHT;
-		cameraController.Move(window, &camera, deltaTime);
+		if(!camera.other)
+			cameraController.Move(window, &camera, deltaTime);
+		else
+		{
+			//cameraController.Move()
+		}
 
 		//RENDER
 		glClearColor(bgColor.x, bgColor.y, bgColor.z, 1.0f);
@@ -249,7 +254,8 @@ int main() {
 		//Skyboix shader
 		glDisable(GL_CULL_FACE);
 		skybocks.use();
-		skybocks.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+		skybocks.setMat4("_ViewProjection", ew::Perspective(ew::Radians(60), (float)SCREEN_WIDTH / SCREEN_HEIGHT, 0.01f, 100.0f) *
+											ew::LookAt(ew::Vec3(0.0), ew::Normalize(camera.target - camera.position), ew::Vec3(0, 1, 0)));
 		skybocks.setMat4("_Model", skyboxTransform.getModelMatrix());
 		skybocks.setVec3("dayColor", ew::Vec3(1.0));
 		skybocks.setVec3("nightColor", ew::Vec3(0.0));
