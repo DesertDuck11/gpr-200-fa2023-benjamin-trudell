@@ -44,8 +44,10 @@ ew::CameraController cameraController;
 
 int width = 10;
 int depth = 10;
-float scale = 0.1f;
+float scale = 0.01f;
 int subdivisions = 100;
+
+float roughness = 0.1f;
 
 int main() {
 	printf("Initializing...");
@@ -93,8 +95,6 @@ int main() {
 	//Skybox mesh
 	ew::Mesh skyboxMesh(ew::createSphere(50.0f, 64));
 	//Terrain mesh
-	//ew::Mesh terrainMesh(ew::createPlane(50.f, 50.f, 50));
-
 	ew::Mesh terrainMesh = dd11::generateTerrain(width, depth, scale, subdivisions);
 
 	ew::Mesh lightMesh[MAX_LIGHTS];
@@ -237,6 +237,7 @@ int main() {
 
 		terrainMesh.draw();
 
+
 		//TODO: Render point lights
 
 		lightShader.use();
@@ -321,6 +322,16 @@ int main() {
 					ImGui::PopID();
 				}
 			}
+			
+			if (ImGui::CollapsingHeader("Terrain Settings"))
+			{
+				ImGui::DragInt("Width", &width, 1);
+				ImGui::DragInt("Depth", &depth, 1);
+				ImGui::DragFloat("Scale", &scale, 0.01);
+				ImGui::DragInt("Subdivisions", &subdivisions, 10);	
+			}
+			terrainMesh = dd11::generateTerrain(width, depth, scale, subdivisions);
+			//terrainMesh.draw();
 
 			ImGui::ColorEdit3("BG color", &bgColor.x);
 

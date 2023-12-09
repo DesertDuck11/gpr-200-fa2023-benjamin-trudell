@@ -11,5 +11,4 @@ namespace dd11 {
 	float perlin(float x, float y);
 	void initPerlinNoise();
 	ew::MeshData generateTerrain(int width, int depth, float scale, int subdivisions);
-	ew::MeshData generateBoulder(float radius, int numSegments, float roughness);
 }
