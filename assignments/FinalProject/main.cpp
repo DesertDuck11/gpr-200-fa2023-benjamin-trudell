@@ -14,7 +14,6 @@
 #include <ew/transform.h>
 #include <ew/camera.h>
 #include <ew/cameraController.h>
-#include <dd11/terrain.h>
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
@@ -147,15 +146,7 @@ int main() {
 
 	lightTransform[0].position = ew::Vec3(-5000.0, 0.0, 0.0);
 	lights[0].position = lightTransform[0].position;
-
-	/*for (int i = 0; i < MAX_LIGHTS; i++)
-	{
-		lightTransform[i].position.z = (i % (MAX_LIGHTS / 2) - 0.5) * 4;
-		lightTransform[i].position.y = 2.0;
-		lightTransform[i].position.x = (i / (MAX_LIGHTS / 2) - 0.5) * 4;
-		lights[i].position = lightTransform[i].position;
-	}*/
-
+	lights[0].color = ew::Vec3(SunColor[0][0], SunColor[0][1], SunColor[0][2]);
 
 	lights[1].color = ew::Vec3(0.6, 0.0, 1.0);
 	lights[2].color = ew::Vec3(1.0, 0.0, 0.0);
@@ -379,29 +370,25 @@ int main() {
 				ImGui::DragFloat("Specular", &material.specular, 0.01, 0.0, 1.0);
 				ImGui::DragFloat("Shininess", &material.shininess, 16.0, 0.0, 1024);
 				ImGui::DragFloat("Light Intensity", &lightIntensity, 0.01, 0.0, 1.0f);
-				ImGui::Checkbox("Orbitting", &orbit);
-				for (int i = 0; i < numLights; i++)
+			}
+
+			if (ImGui::CollapsingHeader("Skybox Settings"))
+			{
+				ImGui::Checkbox("Day/Night", &dayNight);
+				if (dayNight == true)
 				{
-					ImGui::PushID(i);
-					std::string currLight = "Light " + std::to_string(i + 1);
-
-					if (ImGui::CollapsingHeader(currLight.c_str())) {
-						ImGui::ColorEdit3("Color", &lights[i].color.x, 1.0f);
-						ImGui::DragFloat3("Position", &lightTransform[i].position.x, 0.1f);
-						lights[i].position = lightTransform[i].position;
-					}
-					ImGui::PopID();
+					lights[0].color = ew::Vec3(SunColor[1][0], SunColor[1][1], SunColor[1][2]);
 				}
-			}
-
-			ImGui::Checkbox("Day/Night", &dayNight);
-			if (dayNight == true)
-			{
-				lights[0].color = ew::Vec3(0.8, 0, 0.8);
-			}
-			else
-			{
-				lights[0].color = ew::Vec3(1.0, 1.0, 1.0);
+				else
+				{
+					lights[0].color = ew::Vec3(SunColor[0][0], SunColor[0][1], SunColor[0][2]);
+				}
+				ImGui::ColorEdit3("Day Sun Color", SunColor[0], 1.0f);
+				ImGui::ColorEdit3("Day Sky Color 1", SkyColor[0], 1.0f);
+				ImGui::ColorEdit3("Day Sky Color 2", SkyColor[1], 1.0f);
+				ImGui::ColorEdit3("Night Sun Color", SunColor[1], 1.0f);
+				ImGui::ColorEdit3("Night Sky Color 1", SkyColor[2], 1.0f);
+				ImGui::ColorEdit3("Night Sky Color 2", SkyColor[3], 1.0f);
 			}
 
 			ImGui::End();
