@@ -70,5 +70,8 @@ void main(){
 	vec3 color = ambient + finalLight;
 
 	vec4 textColor = vec4(textCol,1.0);
+
+	//vec3 normal = normalize(fs_in.WorldNormal);
+	//FragColor = vec4(abs(normal),1.0);
 	FragColor = vec4(textColor.rgb * color, textColor.a);
 }

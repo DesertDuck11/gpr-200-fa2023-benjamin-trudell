@@ -5,7 +5,7 @@
 namespace ew {
 	struct CameraController {
 		float moveSpeed = 3.0f; //Default speed
-		float sprintMoveSpeed = 6.0f; //Speed when left shift is held
+		float sprintMoveSpeed = 150.0f; //Speed when left shift is held
 		float mouseSensitivity = 0.1f; //mouse delta to degrees. Higher values = faster
 		float yaw = 0.0f; //Degrees
 		float pitch = 0.0f; //Degrees

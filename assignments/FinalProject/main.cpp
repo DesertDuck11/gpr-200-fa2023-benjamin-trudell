@@ -359,7 +359,7 @@ void resetCamera(ew::Camera& camera, ew::CameraController& cameraController) {
 	camera.fov = 60.0f;
 	camera.orthoHeight = 6.0f;
 	camera.nearPlane = 0.1f;
-	camera.farPlane = 100.0f;
+	camera.farPlane = 1000.0f;
 	camera.orthographic = false;
 
 	cameraController.yaw = 0.0f;
