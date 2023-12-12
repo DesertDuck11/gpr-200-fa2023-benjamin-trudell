@@ -14,7 +14,7 @@ namespace ew {
 		float orthoHeight = 6.0f;
 		float aspectRatio = 1.77f;
 		bool other = false;
-		float time = 0.0;
+		float dist = 100;
 
 		inline ew::Mat4 ViewMatrix()const {
 			return ew::LookAt(position, target, ew::Vec3(0, 1, 0));
@@ -22,7 +22,7 @@ namespace ew {
 		inline ew::Mat4 ProjectionMatrix()const {
 			if (other)
 			{
-				return ew::OtherPerspective(fov, aspectRatio, position);
+				return ew::OtherPerspective(dist, aspectRatio);
 			}
 
 			if (orthographic) {

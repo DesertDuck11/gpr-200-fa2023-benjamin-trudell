@@ -108,31 +108,6 @@ namespace ew {
 		m[3][3] = 1.0f;
 		return m;
 	}
-	/*
-	inline ew::Mat4 OtherPerspective(float height, float aspect, float n, float f, float startHeight) {
-
-		//Symmetrical bounds based on aspect ratio
-		float t = height / 2;
-		float b = -t;
-		float r = (height * aspect) / 2;
-		float l = -r;
-
-		float st = startHeight / 2;
-		float sb = -st;
-		float sr = (startHeight * aspect) / 2;
-		float sl = -sr;
-
-		Mat4 m = Mat4(0);
-		m[0][0] = 2 / (r - l);
-		m[1][1] = 2 / (t - b);
-		m[2][2] = -2 / (f - n);
-		m[3][0] = -(r + l) / (r - l);
-		m[3][1] = -(t + b) / (t - b);
-		m[3][2] = -(f + n) / (f - n);
-		m[3][3] = 1.0f;
-		return m;
-	};
-	*/
 
 
 	inline float lerp(float a, float b, float t)
@@ -140,10 +115,12 @@ namespace ew {
 		return a + t * (b - a);
 	};
 	
-	inline ew::Mat4 OtherPerspective(float angle, float aspectRatio, ew::Vec3 position) {
-		if (angle == 0)
-			return Orthographic(6.0f, aspectRatio, 0.0, 100);
-		return Perspective(60, aspectRatio, 0.1, 100);
-		return Perspective(angle, aspectRatio, position.z, position.z + 100);
+	inline ew::Mat4 OtherPerspective(float dist, float aspectRatio) {
+		if (dist > 6 * 180)
+		{
+			return Orthographic(6.0f, aspectRatio, dist, dist + 1000);
+		}
+
+		return Perspective(atan(6.0 / dist), aspectRatio, dist, dist + 1000);
 	};
 }
