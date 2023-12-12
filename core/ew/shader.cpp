@@ -123,5 +123,9 @@ namespace ew {
 	{
 		glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, GL_FALSE, &m[0][0]);
 	}
+	void Shader::setVec3Array(const std::string& name, int arrLength, float arr[][3]) const
+	{
+		glUniform3fv(glGetUniformLocation(m_id, name.c_str()), arrLength, *arr);
+	}
 }
 

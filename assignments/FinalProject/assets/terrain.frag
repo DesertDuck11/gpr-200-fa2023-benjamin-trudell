@@ -25,6 +25,8 @@ uniform int numLights;
 uniform float lightIntensity;
 
 uniform sampler2D _GrassTexture;
+uniform sampler2D _RockTexture;
+uniform sampler2D _SnowTexture;
 
 void main(){
 
@@ -57,14 +59,26 @@ void main(){
 	}
 	vec3 color = ambient + finalLight;
 
-	if(fs_in.newPos.y < 0.5) {
+	if(fs_in.newPos.y < 1) {
 		textColor = texture(_GrassTexture, fs_in.UV);
 	}
-	else if(fs_in.newPos.y > 5.5) {
-		textColor = vec4(1.0, 1.0, 1.0, fs_in.UV);
+	else if(fs_in.newPos.y < 1.5)
+	{
+		vec4 grassColor = texture(_GrassTexture, fs_in.UV);
+		vec4 rockColor = texture(_RockTexture, fs_in.UV);
+		textColor = mix(grassColor, rockColor, (fs_in.newPos.y - 1) * 2);
+	}
+	else if(fs_in.newPos.y < 12) {
+		textColor = texture(_RockTexture, fs_in.UV);
+	}
+	else if(fs_in.newPos.y < 12.5)
+	{
+		vec4 rockColor = texture(_RockTexture, fs_in.UV);
+		vec4 snowColor = texture(_SnowTexture, fs_in.UV);
+		textColor = mix(rockColor, snowColor, (fs_in.newPos.y - 12) * 2);
 	}
 	else {
-		textColor = vec4(0.8, 0.8, 0.9, fs_in.UV);
+		textColor = texture(_SnowTexture, fs_in.UV);
 	}
 
 	FragColor = vec4(textColor.rgb * color, textColor.a);

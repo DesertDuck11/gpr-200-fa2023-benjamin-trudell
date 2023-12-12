@@ -35,6 +35,19 @@ struct Material {
 };
 
 const int MAX_LIGHTS = 4;
+bool dayNight = false;
+
+float SkyColor[4][3] = {
+	{ 1.0f, 0.5f, 0.0f },
+	{ 0.8f, 1.0f, 0.8f },
+	{ 0.5f, 0.0f, 0.5f },
+	{ 0.0f, 0.0f, 0.5f }
+};
+
+float SunColor[2][3] = {
+	{ 1.0f, 1.0f, 1.0f },
+	{ 0.8f, 0.0f, 0.8f }
+};
 
 float prevTime;
 ew::Vec3 bgColor = ew::Vec3(0.1f);
@@ -76,10 +89,12 @@ int main() {
 
 	ew::Shader lightShader("assets/unlit.vert", "assets/unlit.frag");
 	ew::Shader shader("assets/defaultLit.vert", "assets/defaultLit.frag");
-	ew::Shader skybocks("assets/skybox.vert", "assets/skybox.frag");
+	ew::Shader skybox("assets/skybox.vert", "assets/skybox.frag");
 	ew::Shader terrain("assets/terrain.vert", "assets/terrain.frag");
 
 	unsigned int grassTexture = ew::loadTexture("assets/grass.jpg", GL_REPEAT, GL_LINEAR);
+	unsigned int rockTexture = ew::loadTexture("assets/rock.jpg", GL_REPEAT, GL_LINEAR);
+	unsigned int snowTexture = ew::loadTexture("assets/snow.jpg", GL_REPEAT, GL_LINEAR);
 	unsigned int heightMap = ew::loadTexture("assets/terrain.png", GL_REPEAT, GL_LINEAR);
 
 	//Create cube
@@ -91,7 +106,7 @@ int main() {
 	ew::Mesh skyboxMesh(ew::createSphere(50.0f, 64));
 	//Terrain mesh
 	ew::Mesh terrainMesh = (ew::createPlane(100.f,100.f,512));
-	ew::Mesh flatPlane = (ew::createPlane(200, 200, 512));
+	ew::Mesh extraTerrain = (ew::createPlane(100.f, 100.f, 512));
 
 	ew::Mesh lightMesh[MAX_LIGHTS];
 
@@ -108,7 +123,7 @@ int main() {
 	//Skybox transform
 	ew::Transform skyboxTransform;
 	ew::Transform terrainTransform;
-	ew::Transform flatTransform;
+	ew::Transform extraTerrainTransform[8];
 
 	ew::Transform lightTransform[4];
 	
@@ -117,20 +132,30 @@ int main() {
 	cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
 	//Skybox position
 	skyboxTransform.position = ew::Vec3(0.0f, 0.0f, 0.0f);
-	terrainTransform.position = ew::Vec3(0.0f, -10.0f, 0.0f);
-	flatTransform.position = ew::Vec3(0.0f, -10.0f, 0.0f);
+	terrainTransform.position = ew::Vec3(0.0f, -10.05f, 0.0f);
+	extraTerrainTransform[0].position = ew::Vec3(99.0f, -10.0f, 0.0f);
+	extraTerrainTransform[1].position = ew::Vec3(99.0f, -10.0f, 99.0f);
+	extraTerrainTransform[2].position = ew::Vec3(99.0f, -10.0f, -99.0f);
+	extraTerrainTransform[3].position = ew::Vec3(0.0f, -10.0f, -99.0f);
+	extraTerrainTransform[4].position = ew::Vec3(0.0f, -10.0f, 99.0f);
+	extraTerrainTransform[5].position = ew::Vec3(-99.0f, -10.0f, 0.0f);
+	extraTerrainTransform[6].position = ew::Vec3(-99.0f, -10.0f, 99.0f);
+	extraTerrainTransform[7].position = ew::Vec3(-99.0f, -10.0f, -99.0f);
 
 	Light lights[MAX_LIGHTS];
 
-	for (int i = 0; i < MAX_LIGHTS; i++)
+	lightTransform[0].position = ew::Vec3(-5000.0, 0.0, 0.0);
+	lights[0].position = lightTransform[0].position;
+
+	/*for (int i = 0; i < MAX_LIGHTS; i++)
 	{
 		lightTransform[i].position.z = (i % (MAX_LIGHTS / 2) - 0.5) * 4;
 		lightTransform[i].position.y = 2.0;
 		lightTransform[i].position.x = (i / (MAX_LIGHTS / 2) - 0.5) * 4;
 		lights[i].position = lightTransform[i].position;
-	}
+	}*/
 
-	lights[0].color = ew::Vec3(1.0, 1.0, 1.0);
+
 	lights[1].color = ew::Vec3(0.6, 0.0, 1.0);
 	lights[2].color = ew::Vec3(1.0, 0.0, 0.0);
 	lights[3].color = ew::Vec3(0.0, 0.0, 1.0);
@@ -138,12 +163,12 @@ int main() {
 	Material material;
 
 	material.shininess = 50.0f;
-	material.ambientK = 0.1;
+	material.ambientK = 0.2;
 	material.diffuseK = 0.5;
 	material.specular = 1.0;
 
 	int numLights = 1;
-	float lightIntensity = 0.5;
+	float lightIntensity = 1.0;
 	bool orbit = false;
 
 	resetCamera(camera, cameraController);
@@ -181,6 +206,7 @@ int main() {
 		shader.use();
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, grassTexture);
 		shader.setInt("_Texture", 0);
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
@@ -195,19 +221,30 @@ int main() {
 
 		//Draw shapes
 		shader.setMat4("_Model", cubeTransform.getModelMatrix());
-		cubeMesh.draw();
+		//cubeMesh.draw();
 
-		shader.setMat4("_Model", flatTransform.getModelMatrix());
-		//flatPlane.draw();
+		for (int i = 0; i < 8; i++)
+		{
+			shader.setMat4("_Model", extraTerrainTransform[i].getModelMatrix());
+			extraTerrain.draw();
+		}
 
 		shader.setMat4("_Model", sphereTransform.getModelMatrix());
-		sphereMesh.draw();
+		//sphereMesh.draw();
 
 		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
-		cylinderMesh.draw();
+		//cylinderMesh.draw();
 
 		shader.setFloat("shininess", material.shininess);
 		shader.setFloat("ambient", material.ambientK);
+		if (dayNight == true)
+		{
+			shader.setFloat("ambient", material.ambientK);
+		}
+		else
+		{
+			shader.setFloat("ambient", material.ambientK * 3);
+		}
 		shader.setFloat("specular", material.specular);
 		shader.setFloat("diffuse", material.diffuseK);
 		shader.setInt("numLights", numLights);
@@ -222,10 +259,16 @@ int main() {
 		
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, heightMap);
-		terrain.setInt("_HeightMap", 0);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, grassTexture);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, rockTexture);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, snowTexture);
+		terrain.setInt("_HeightMap", 0);
 		terrain.setInt("_GrassTexture", 1);
+		terrain.setInt("_RockTexture", 2);
+		terrain.setInt("_SnowTexture", 3);
 
 		for (int i = 0; i < numLights; i++)
 		{
@@ -234,7 +277,14 @@ int main() {
 		}
 
 		terrain.setFloat("shininess", material.shininess);
-		terrain.setFloat("ambient", material.ambientK);
+		if (dayNight == true)
+		{
+			terrain.setFloat("ambient", material.ambientK);
+		}
+		else
+		{
+			terrain.setFloat("ambient", material.ambientK * 3);
+		}
 		terrain.setFloat("specular", material.specular);
 		terrain.setFloat("diffuse", material.diffuseK);
 		terrain.setInt("numLights", numLights);
@@ -250,6 +300,8 @@ int main() {
 		{
 			lightShader.setMat4("_Model", lightTransform[i].getModelMatrix());
 			lightShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+			//lightShader.setMat4("_ViewProjection", ew::Perspective(ew::Radians(60), (float)SCREEN_WIDTH / SCREEN_HEIGHT, 0.01f, 100.0f)*
+				//ew::LookAt(ew::Vec3(0.0), ew::Normalize(camera.target - camera.position), ew::Vec3(0, 1, 0)));
 			lightShader.setVec3("_Color", lights[i].color);
 			lightMesh[i].draw();
 		}
@@ -258,13 +310,21 @@ int main() {
 
 		//Skyboix shader
 		glDisable(GL_CULL_FACE);
-		skybocks.use();
-		skybocks.setMat4("_ViewProjection", ew::Perspective(ew::Radians(60), (float)SCREEN_WIDTH / SCREEN_HEIGHT, 0.01f, 100.0f) *
+		skybox.use();
+		//skybox.setMat4("_ViewProjection", camera.ProjectionMatrix()* camera.ViewMatrix());
+		skybox.setMat4("_ViewProjection", ew::Perspective(ew::Radians(60), (float)SCREEN_WIDTH / SCREEN_HEIGHT, 0.01f, 100.0f) *
 											ew::LookAt(ew::Vec3(0.0), ew::Normalize(camera.target - camera.position), ew::Vec3(0, 1, 0)));
-		skybocks.setMat4("_Model", skyboxTransform.getModelMatrix());
-		skybocks.setVec3("dayColor", ew::Vec3(1.0));
-		skybocks.setVec3("nightColor", ew::Vec3(0.0));
-		skybocks.setVec3("sunColor", ew::Vec3(1.0, 0, 1.0));
+		skybox.setMat4("_Model", skyboxTransform.getModelMatrix());
+		skybox.setVec3Array("skyColor", 4, SkyColor);
+		skybox.setVec3Array("sunColor", 2, SunColor);
+		if (dayNight == true)
+		{
+			skybox.setInt("dayNight", 1);
+		}
+		else
+		{
+			skybox.setInt("dayNight", 0);
+		}
 		skyboxMesh.draw();
 		glEnable(GL_CULL_FACE);
 
@@ -310,7 +370,6 @@ int main() {
 				ImGui::DragFloat("Specular", &material.specular, 0.01, 0.0, 1.0);
 				ImGui::DragFloat("Shininess", &material.shininess, 16.0, 0.0, 1024);
 				ImGui::DragFloat("Light Intensity", &lightIntensity, 0.01, 0.0, 1.0f);
-				ImGui::SliderInt("Number Of Lights", &numLights, 0, 4);
 				ImGui::Checkbox("Orbitting", &orbit);
 				for (int i = 0; i < numLights; i++)
 				{
@@ -325,16 +384,16 @@ int main() {
 					ImGui::PopID();
 				}
 			}
-			
-			if (ImGui::CollapsingHeader("Terrain Settings"))
+
+			ImGui::Checkbox("Day/Night", &dayNight);
+			if (dayNight == true)
 			{
+				lights[0].color = ew::Vec3(0.8, 0, 0.8);
 			}
-
-
-			//terrainMesh = dd11::generateTerrain(width, depth, scale, subdivisions);
-			//terrainMesh.draw();
-
-			ImGui::ColorEdit3("BG color", &bgColor.x);
+			else
+			{
+				lights[0].color = ew::Vec3(1.0, 1.0, 1.0);
+			}
 
 			ImGui::End();
 
@@ -355,12 +414,12 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 }
 
 void resetCamera(ew::Camera& camera, ew::CameraController& cameraController) {
-	camera.position = ew::Vec3(0, 0, 5);
+	camera.position = ew::Vec3(0, 0, 80);
 	camera.target = ew::Vec3(0);
 	camera.fov = 60.0f;
 	camera.orthoHeight = 6.0f;
 	camera.nearPlane = 0.1f;
-	camera.farPlane = 1000.0f;
+	camera.farPlane = 150.0f;
 	camera.orthographic = false;
 
 	cameraController.yaw = 0.0f;
