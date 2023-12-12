@@ -133,6 +133,7 @@ int main() {
 	//Skybox position
 	skyboxTransform.position = ew::Vec3(0.0f, 0.0f, 0.0f);
 	terrainTransform.position = ew::Vec3(0.0f, -10.05f, 0.0f);
+	terrainTransform.rotation = ew::Vec3(0.0f, 180.f, 0.0f);
 	extraTerrainTransform[0].position = ew::Vec3(99.0f, -10.0f, 0.0f);
 	extraTerrainTransform[1].position = ew::Vec3(99.0f, -10.0f, 99.0f);
 	extraTerrainTransform[2].position = ew::Vec3(99.0f, -10.0f, -99.0f);
@@ -170,6 +171,7 @@ int main() {
 	int numLights = 1;
 	float lightIntensity = 1.0;
 	bool orbit = false;
+	int timeVar;
 
 	resetCamera(camera, cameraController);
 
@@ -195,8 +197,8 @@ int main() {
 		cameraController.Move(window, &camera, deltaTime);
 		if(camera.other)
 		{
-			camera.position = ew::Vec3(0,0,-camera.dist);
-			camera.target = camera.position - ew::Normalize(camera.position);
+			camera.position = ew::Vec3(camera.dist + 100.0, 7.0, 4.0);
+			camera.target = camera.position + ew::Vec3(-1.0, 0.0, 0.0);
 		}
 
 		//RENDER
@@ -338,7 +340,12 @@ int main() {
 			if (ImGui::CollapsingHeader("Camera")) {
 				ImGui::DragFloat3("Position", &camera.position.x, 0.1f);
 				ImGui::DragFloat3("Target", &camera.target.x, 0.1f);
-				ImGui::Checkbox("Other Mode", &camera.other);
+				//ImGui::Checkbox("Other Mode", &camera.other);
+				if (ImGui::Button("Toggle Transition"))
+				{
+					timeVar = glfwGetTime();
+					camera.other = true;
+				}
 				if (!camera.other)
 				{
 					ImGui::Checkbox("Orthographic", &camera.orthographic);
@@ -352,6 +359,8 @@ int main() {
 				else
 				{
 					ImGui::SliderFloat("Distance", &camera.dist, 0.0f, (6 * 180.0f));
+					if(((glfwGetTime() - timeVar) / 20) < 1.0f)
+						camera.dist = ew::lerp(0, 6 * 180, 1 - (glfwGetTime() - timeVar) / 20);
 				}
 				
 				ImGui::DragFloat("Near Plane", &camera.nearPlane, 0.1f, 0.0f);

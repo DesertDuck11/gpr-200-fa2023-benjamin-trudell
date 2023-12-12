@@ -14,7 +14,7 @@ namespace ew {
 		float orthoHeight = 6.0f;
 		float aspectRatio = 1.77f;
 		bool other = false;
-		float dist = 100;
+		float dist = 6 * 180;
 
 		inline ew::Mat4 ViewMatrix()const {
 			return ew::LookAt(position, target, ew::Vec3(0, 1, 0));
