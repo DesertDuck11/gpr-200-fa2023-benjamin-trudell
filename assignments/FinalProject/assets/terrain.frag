@@ -3,13 +3,10 @@ out vec4 FragColor;
 
 in Surface{
 	vec2 UV;
-	vec3 WorldPosition;
 	vec3 WorldNormal;
+	vec3 WorldPosition;
+	vec3 newPos;
 }fs_in;
-
-in float heightY;
-
-uniform vec3 _Color;
 
 struct Light
 {
@@ -24,16 +21,15 @@ uniform float shininess;
 uniform float ambient;
 uniform float diffuse;
 uniform float specular;
-uniform int mode;
 uniform int numLights;
 uniform float lightIntensity;
 
+uniform sampler2D _GrassTexture;
+
 void main(){
-	vec3 textCol;
-	if(heightY>1)
-		textCol = vec3(1.0);
-	else
-		textCol = mix(vec3(0.0), vec3(1.0), heightY / 1.25);
+
+	vec4 textColor;
+
 	vec3 ambient = vec3(1.0) * ambient;
 	vec3 finalLight = vec3(0);
 	for(int i = 0; i < numLights; i++)
@@ -50,28 +46,26 @@ void main(){
 		float _specular = 0.0;
 		if(iDiffuse > 0)
 		{
-			vec3 viewDirection = normalize(camPos - fs_in.WorldPosition);
-			if(mode == 0)
-			{
-				vec3 halfDirection = normalize(lightDirection + viewDirection);
-				float specularAngle = max(dot(halfDirection, normal), 0.0);
-				_specular = pow(specularAngle, shininess);
-			}
-			else
-			{
-				vec3 r = reflect(-lightDirection, normal);
-				float specularAngle = max(dot(r, viewDirection), 0.0);
-				_specular = pow(specularAngle, shininess/4.0);
-			}
+		vec3 viewDirection = normalize(camPos - fs_in.WorldPosition );
+			
+		vec3 halfDirection = normalize(lightDirection + viewDirection);
+		float specularAngle = max(dot(halfDirection, normal), 0.0);
+		_specular = pow(specularAngle, shininess);
 		}
 		finalLight += _diffuse * iDiffuse * _Lights[i].color * lightIntensity + 
 					 specularColor * _specular * _Lights[i].color * lightIntensity;
 	}
 	vec3 color = ambient + finalLight;
 
-	vec4 textColor = vec4(textCol,1.0);
+	if(fs_in.newPos.y < 0.5) {
+		textColor = texture(_GrassTexture, fs_in.UV);
+	}
+	else if(fs_in.newPos.y > 5.5) {
+		textColor = vec4(1.0, 1.0, 1.0, fs_in.UV);
+	}
+	else {
+		textColor = vec4(0.8, 0.8, 0.9, fs_in.UV);
+	}
 
-	//vec3 normal = normalize(fs_in.WorldNormal);
-	//FragColor = vec4(abs(normal),1.0);
 	FragColor = vec4(textColor.rgb * color, textColor.a);
 }

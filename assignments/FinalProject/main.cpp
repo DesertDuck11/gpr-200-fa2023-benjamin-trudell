@@ -42,12 +42,6 @@ ew::Vec3 bgColor = ew::Vec3(0.1f);
 ew::Camera camera;
 ew::CameraController cameraController;
 
-int width = 10;
-int depth = 10;
-float scale = 0.01f;
-int subdivisions = 100;
-
-float roughness = 0.1f;
 
 int main() {
 	printf("Initializing...");
@@ -85,7 +79,8 @@ int main() {
 	ew::Shader skybocks("assets/skybox.vert", "assets/skybox.frag");
 	ew::Shader terrain("assets/terrain.vert", "assets/terrain.frag");
 
-	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg", GL_REPEAT, GL_LINEAR);
+	unsigned int grassTexture = ew::loadTexture("assets/grass.jpg", GL_REPEAT, GL_LINEAR);
+	unsigned int heightMap = ew::loadTexture("assets/terrain.png", GL_REPEAT, GL_LINEAR);
 
 	//Create cube
 	ew::Mesh cubeMesh(ew::createCube(1.0f));
@@ -95,7 +90,8 @@ int main() {
 	//Skybox mesh
 	ew::Mesh skyboxMesh(ew::createSphere(50.0f, 64));
 	//Terrain mesh
-	ew::Mesh terrainMesh = dd11::generateTerrain(width, depth, scale, subdivisions);
+	ew::Mesh terrainMesh = (ew::createPlane(100.f,100.f,512));
+	ew::Mesh flatPlane = (ew::createPlane(200, 200, 512));
 
 	ew::Mesh lightMesh[MAX_LIGHTS];
 
@@ -112,6 +108,7 @@ int main() {
 	//Skybox transform
 	ew::Transform skyboxTransform;
 	ew::Transform terrainTransform;
+	ew::Transform flatTransform;
 
 	ew::Transform lightTransform[4];
 	
@@ -120,7 +117,8 @@ int main() {
 	cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
 	//Skybox position
 	skyboxTransform.position = ew::Vec3(0.0f, 0.0f, 0.0f);
-	terrainTransform.position = ew::Vec3(-50.0f, -5.0f, -50.0f);
+	terrainTransform.position = ew::Vec3(0.0f, -10.0f, 0.0f);
+	flatTransform.position = ew::Vec3(0.0f, -10.0f, 0.0f);
 
 	Light lights[MAX_LIGHTS];
 
@@ -169,11 +167,11 @@ int main() {
 
 		//Update camera
 		camera.aspectRatio = (float)SCREEN_WIDTH / SCREEN_HEIGHT;
-		if(!camera.other)
-			cameraController.Move(window, &camera, deltaTime);
-		else
+		cameraController.Move(window, &camera, deltaTime);
+		if(camera.other)
 		{
-			//cameraController.Move()
+			camera.position = ew::Vec3(0,0,-camera.dist);
+			camera.target = camera.position - ew::Normalize(camera.position);
 		}
 
 		//RENDER
@@ -183,7 +181,7 @@ int main() {
 		shader.use();
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
-		glBindTexture(GL_TEXTURE_2D, brickTexture);
+		glBindTexture(GL_TEXTURE_2D, grassTexture);
 		shader.setInt("_Texture", 0);
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 
@@ -199,8 +197,8 @@ int main() {
 		shader.setMat4("_Model", cubeTransform.getModelMatrix());
 		cubeMesh.draw();
 
-		shader.setMat4("_Model", planeTransform.getModelMatrix());
-		//planeMesh.draw();
+		shader.setMat4("_Model", flatTransform.getModelMatrix());
+		//flatPlane.draw();
 
 		shader.setMat4("_Model", sphereTransform.getModelMatrix());
 		sphereMesh.draw();
@@ -217,10 +215,17 @@ int main() {
 
 		//Terrain Shader
 		terrain.use();
+
 		terrain.setVec3("camPos", camera.position);
-		terrain.setMat4("_Model", terrainTransform.getModelMatrix());
 		terrain.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
-		terrain.setVec3("_Color", ew::Vec3(1.0f,1.0f,1.0f));
+		terrain.setMat4("_Model", terrainTransform.getModelMatrix());
+		
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, heightMap);
+		terrain.setInt("_HeightMap", 0);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, grassTexture);
+		terrain.setInt("_GrassTexture", 1);
 
 		for (int i = 0; i < numLights; i++)
 		{
@@ -236,7 +241,6 @@ int main() {
 		terrain.setFloat("lightIntensity", lightIntensity);
 
 		terrainMesh.draw();
-
 
 		//TODO: Render point lights
 
@@ -287,8 +291,7 @@ int main() {
 				}
 				else
 				{
-					ImGui::DragFloat("Start Height", &camera.orthoHeight, 0.1f);
-					ImGui::SliderFloat("FOV", &camera.fov, 0.0f, 180.0f);
+					ImGui::SliderFloat("Distance", &camera.dist, 0.0f, (6 * 180.0f));
 				}
 				
 				ImGui::DragFloat("Near Plane", &camera.nearPlane, 0.1f, 0.0f);
@@ -325,12 +328,10 @@ int main() {
 			
 			if (ImGui::CollapsingHeader("Terrain Settings"))
 			{
-				ImGui::DragInt("Width", &width, 1);
-				ImGui::DragInt("Depth", &depth, 1);
-				ImGui::DragFloat("Scale", &scale, 0.01);
-				ImGui::DragInt("Subdivisions", &subdivisions, 10);	
 			}
-			terrainMesh = dd11::generateTerrain(width, depth, scale, subdivisions);
+
+
+			//terrainMesh = dd11::generateTerrain(width, depth, scale, subdivisions);
 			//terrainMesh.draw();
 
 			ImGui::ColorEdit3("BG color", &bgColor.x);
